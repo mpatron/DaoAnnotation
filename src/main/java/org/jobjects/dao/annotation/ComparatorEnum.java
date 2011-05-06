@@ -678,34 +678,60 @@ Public License instead of this License.  But first, please read
 package org.jobjects.dao.annotation;
 
 /**
- * ComparatorEnum
- * 
+ * ComparatorEnum.
  * @author Mickaël Patron
  * @since 1.0.0
  */
 public enum ComparatorEnum {
 
+    /**
+     * equal.
+     */
     EQUAL("="),
+    /**
+     * different.
+     */
     NOT_EQUAL("!="),
+    /**
+     * moins.
+     */
     LESS_THAN("<"),
+    /**
+     * moins ou egal.
+     */
     LESS_THAN_OR_EQUAL("<="),
+    /**
+     * superieur.
+     */
     UPPER_THAN(">"),
+    /**
+     * superieur ou egal.
+     */
     UPPER_THAN_OR_EQUAL(">=");
 
   /**
-   * @param comparator
+   * @param comparator le comparateur.
    */
-  private ComparatorEnum(String comparator) {
+  private ComparatorEnum(final String comparator) {
     this.comparator = comparator;
   }
 
+  /**
+   * Comparateur.
+   */
   private String comparator;
 
+  /**
+   * @return Le comparateur courant.
+   */
   public String getComparator() {
     return comparator;
   }
 
-  public void setComparator(String comparator) {
+  /**
+   * @param comparator le comparateur.
+   */
+  public void setComparator(final String comparator) {
     this.comparator = comparator;
   }
 

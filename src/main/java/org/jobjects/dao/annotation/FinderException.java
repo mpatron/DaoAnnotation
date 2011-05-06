@@ -1,4 +1,5 @@
-/*
+package org.jobjects.dao.annotation;
+/**
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -674,7 +675,6 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
  */
-package org.jobjects.dao.annotation;
 
 /**
  * ComparatorEnum
@@ -697,7 +697,7 @@ public class FinderException extends Exception {
    * 
    * @param message
    */
-  public FinderException(String message) {
+  public FinderException(final String message) {
     super(message);
   }
 
@@ -707,7 +707,7 @@ public class FinderException extends Exception {
    * @param message
    * @param cause
    */
-  public FinderException(String message, Throwable cause) {
+  public FinderException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
@@ -716,7 +716,7 @@ public class FinderException extends Exception {
    * 
    * @param cause
    */
-  public FinderException(Throwable cause) {
+  public FinderException(final Throwable cause) {
     super(cause);
   }
 

@@ -689,9 +689,18 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DaoTable {
+  /**
+   * Returne par exemple "java:/comp/env/myDataSource".
+   */
   String dataSourceName();
 
+  /**
+   * Returne le nom du schema.
+   */
   String schemaName() default "";
 
+  /**
+   * Returne le nom de la table.
+   */
   String tableName();
 }

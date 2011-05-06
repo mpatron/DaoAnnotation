@@ -730,7 +730,11 @@ public class Manager<P, T extends P> extends ManagerTools {
     }
   }
 
-  private final Connection getConnection() throws Exception {
+  /**
+   * @return La connection
+   * @throws Exception Exception de connection SQL
+   */
+  private Connection getConnection() throws Exception {
     Connection returnValue = null;
     Context initial = new InitialContext();
     /**
@@ -751,9 +755,7 @@ public class Manager<P, T extends P> extends ManagerTools {
    * Persistance du bean annoté avec DaoTable ainsi que DaoField. Si pour une
    * raison quelconque une problème survient, l'exception CreateException sera
    * levée.
-   * 
-   * @param Le
-   *          bean d'un type quelconque comportant des annotations daoTable et
+   * @param bean Le bean d'un type quelconque comportant des annotations daoTable et
    *          DaoField
    * @return Un bean de même type que celui passé en paramètre. Les données du
    *         bean sont rafraichi à partir de la base au cas où celle-ci aurait
@@ -761,7 +763,7 @@ public class Manager<P, T extends P> extends ManagerTools {
    * @throws CreateException
    *           Exception levée au sur problème de persistance.
    */
-  public final T create(T bean) throws CreateException {
+  public final T create(final T bean) throws CreateException {
     T returnValue = null;
     try {
       String msg = "Cannot create "
@@ -844,16 +846,14 @@ public class Manager<P, T extends P> extends ManagerTools {
   /**
    * Retourne le bean à partir de la clef primaire. Si la ligne n'existe pas
    * dans la base alors une exception FinderException est levée.
-   * 
-   * @param Le
-   *          beanPk d'un type quelconque comportant des annotations daoTable et
+   * @param beanPk Le bean d'un type quelconque comportant des annotations daoTable et
    *          DaoField. Il represente la clef primaire de la table.
    * @return Un bean de même type que celui passé en paramètre. Les données du
    *         bean sont rafraichi à partir de la base au cas où celle-ci aurait
    *         modifié les données grace à des trigger ou autre.
-   * @throws FinderException
+   * @throws FinderException Returne un exception si le bean n'existe pas.
    */
-  public final T load(P beanPk) throws FinderException {
+  public final T load(final P beanPk) throws FinderException {
     T returnValue = null;
     try {
 
@@ -973,11 +973,11 @@ public class Manager<P, T extends P> extends ManagerTools {
   }
 
   /**
-   * @param bean
-   * @return
-   * @throws SaveException
+   * @param bean le bean à sauvegarder
+   * @return le bean sauvegardé
+   * @throws SaveException Problème de persistance
    */
-  public final T save(T bean) throws SaveException {
+  public final T save(final T bean) throws SaveException {
     T returnValue = null;
     String msg = "Cannot save "
         + entityClass.getCanonicalName()
@@ -1003,12 +1003,11 @@ public class Manager<P, T extends P> extends ManagerTools {
   /**
    * Sauvegarde le bean dans la base. Une exception SaveException peut être
    * levée si un problème survient.
-   * 
-   * @param bean
+   * @param bean le bean à sauvegarder
    * @return Un boolean positif si la mise en jour s'est réelement passé.
-   * @throws SaveException
+   * @throws SaveException Problème de persistance
    */
-  private boolean saveReal(T bean) throws SaveException {
+  private boolean saveReal(final T bean) throws SaveException {
     boolean returnValue = true;
 
     String msg = "Cannot save "
@@ -1115,10 +1114,10 @@ public class Manager<P, T extends P> extends ManagerTools {
   // ---------------------------------------------------------------------------
 
   /**
-   * @param beanPk
-   * @throws RemoveException
+   * @param beanPk le bean à supprimer
+   * @throws RemoveException Problème de suppression
    */
-  public final void remove(P beanPk) throws RemoveException {
+  public final void remove(final P beanPk) throws RemoveException {
     String msg = "Delete error "
         + entityClass.getCanonicalName()
         + " : "
@@ -1186,10 +1185,10 @@ public class Manager<P, T extends P> extends ManagerTools {
   }
 
   /**
-   * @param beanPk
-   * @return
+   * @param beanPk le bean à qui on doit vérifier l'existance.
+   * @return return true si il existe sinon false.
    */
-  public final boolean isExist(P beanPk) {
+  public final boolean isExist(final P beanPk) {
     boolean returnValue = false;
     if (beanPk == null) {
       return returnValue;
@@ -1262,16 +1261,16 @@ public class Manager<P, T extends P> extends ManagerTools {
   }
 
   /**
-   * 
-   * @param min
-   * @param max
-   * @param wherefields
-   * @param orderfields
-   * @return
-   * @throws FinderException
+   * @param min Numero de ligne minimum
+   * @param max Numero de ligne maximum
+   * @param wherefields Filtre
+   * @param orderfields Ordonancement
+   * @return la liste des beans
+   * @throws FinderException retourne un exception si il y a une erreur.
+   * La liste peut être vide.
    */
-  public final List<T> findAll(int min, int max, WhereFields wherefields,
-      OrderFields orderfields) throws FinderException {
+  public final List<T> findAll(final int min, final int max, final WhereFields wherefields,
+      final OrderFields orderfields) throws FinderException {
     List<T> returnValue = null;
     try {
       returnValue = new ArrayList<T>(); // 26.375
