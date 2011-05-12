@@ -712,7 +712,193 @@ public class Manager<P, T extends P> extends ManagerTools {
   private Class<T> entityClass = null;
   private String usualTable;
   private String dataSourceName;
+  private String sql_create = null;
+  private String sql_load = null;
+  private String sql_save = null;
+  private String sql_delete = null;
+  private String sql_exist = null;
+  private String sql_findAll = null;
+  
+  private String loadSqlCreate(String usualTable, Field[] fields) {
+    String sql = "INSERT INTO " + usualTable + " ( ";
+    String buffer = StringUtils.EMPTY;
 
+    boolean first = true;
+    for (Field field : fields) {
+      if (first) {
+        first = false;
+      } else {
+        sql += ", ";
+        buffer += ", ";
+      }
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          sql += ((DaoField) annotation).fieldName();
+          buffer += "?";
+          break;
+        }
+      }
+    }
+    sql += ") VALUES (";
+    sql += buffer;
+    sql += ")";
+    return sql;
+  }
+  
+  private String loadSqlLoad(String usualTable, Field[] fields) {
+    String sql = "SELECT ";
+
+    boolean first = true;
+    for (Field field : fields) {
+      if (first) {
+        first = false;
+      } else {
+        sql += ", ";
+      }
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          sql += ((DaoField) annotation).fieldName();
+          break;
+        }
+      }
+    }
+
+    sql += " FROM " + usualTable + " WHERE ";
+
+    first = true;
+    for (Field field : fields) {
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          if (((DaoField) annotation).isPrimary()) {
+            if (first) {
+              first = false;
+            } else {
+              sql += " AND ";
+            }
+            sql += ((DaoField) annotation).fieldName() + "=?";
+          }
+          break;
+        }
+      }
+    }
+    return sql;
+  }
+  
+  private String loadSqlSave(String usualTable, Field[] fields) {
+    String sql = "UPDATE " + usualTable + " SET ";
+
+    boolean first = true;
+    for (Field field : fields) {
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          if (!((DaoField) annotation).isPrimary()) {
+            if (first) {
+              first = false;
+            } else {
+              sql += ", ";
+            }
+            sql += ((DaoField) annotation).fieldName() + "=?";
+          }
+          break;
+        }
+      }
+    }
+    sql += " WHERE ";
+    first = true;
+    for (Field field : fields) {
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          if (((DaoField) annotation).isPrimary()) {
+            if (first) {
+              first = false;
+            } else {
+              sql += " AND ";
+            }
+            sql += ((DaoField) annotation).fieldName() + "=?";
+          }
+          break;
+        }
+      }
+    }
+    return sql;
+  }
+  
+  private String loadSqlDelete(String usualTable, Field[] fields) {
+    String sql = "DELETE FROM " + usualTable;
+    sql += " WHERE ";
+
+    boolean first = true;
+    for (Field field : fields) {
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          if (((DaoField) annotation).isPrimary()) {
+            if (first) {
+              first = false;
+            } else {
+              sql += " AND ";
+            }
+            sql += ((DaoField) annotation).fieldName() + "=?";
+          }
+          break;
+        }
+      }
+    }
+    return sql;    
+  }
+  
+  private String loadSqlExist(String usualTable, Field[] fields) {
+    String sql = "SELECT COUNT(*)";
+    sql += " FROM " + usualTable + " WHERE ";
+
+    boolean first = true;
+    for (Field field : fields) {
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          if (((DaoField) annotation).isPrimary()) {
+            if (first) {
+              first = false;
+            } else {
+              sql += " AND ";
+            }
+            sql += ((DaoField) annotation).fieldName() + "=?";
+          }
+          break;
+        }
+      }
+    }
+   return sql; 
+  }
+  
+  
+  
+  private String loadSqlFindAll(String usualTable, Field[] fields) {
+    String sql = "SELECT ";
+    boolean first = true;
+    for (Field field : fields) {
+      if (first) {
+        first = false;
+      } else {
+        sql += ", ";
+      }
+      Annotation[] annotations = field.getAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof DaoField) {
+          sql += ((DaoField) annotation).fieldName();
+          break;
+        }
+      }
+    }
+    sql += " FROM " + usualTable + " ";
+    return sql;
+  }
+  
   /**
    * @param entityClass
    */
@@ -772,36 +958,16 @@ public class Manager<P, T extends P> extends ManagerTools {
           + ToStringBuilder.reflectionToString(
             bean,
             ToStringStyle.MULTI_LINE_STYLE);
-
-      String sql = "INSERT INTO " + usualTable + " ( ";
-      String buffer = StringUtils.EMPTY;
-
-      boolean first = true;
-      for (Field field : fields) {
-        if (first) {
-          first = false;
-        } else {
-          sql += ", ";
-          buffer += ", ";
-        }
-        Annotation[] annotations = field.getAnnotations();
-        for (Annotation annotation : annotations) {
-          if (annotation instanceof DaoField) {
-            sql += ((DaoField) annotation).fieldName();
-            buffer += "?";
-            break;
-          }
-        }
+      
+      if(null == sql_create) {
+        sql_create = loadSqlCreate(usualTable, fields);
       }
-      sql += ") VALUES (";
-      sql += buffer;
-      sql += ")";
 
       returnValue = entityClass.newInstance();
       try {
         Connection connection = getConnection();
         try {
-          PreparedStatement pstmt = connection.prepareStatement(sql);
+          PreparedStatement pstmt = connection.prepareStatement(sql_create);
           try {
             int i = 1;
             for (Field field : fields) {
@@ -864,48 +1030,13 @@ public class Manager<P, T extends P> extends ManagerTools {
             beanPk,
             ToStringStyle.MULTI_LINE_STYLE);
 
-      String sql = "SELECT ";
-
-      boolean first = true;
-      for (Field field : fields) {
-        if (first) {
-          first = false;
-        } else {
-          sql += ", ";
-        }
-        Annotation[] annotations = field.getAnnotations();
-        for (Annotation annotation : annotations) {
-          if (annotation instanceof DaoField) {
-            sql += ((DaoField) annotation).fieldName();
-            break;
-          }
-        }
-      }
-
-      sql += " FROM " + usualTable + " WHERE ";
-
-      first = true;
-      for (Field field : fields) {
-        Annotation[] annotations = field.getAnnotations();
-        for (Annotation annotation : annotations) {
-          if (annotation instanceof DaoField) {
-            if (((DaoField) annotation).isPrimary()) {
-              if (first) {
-                first = false;
-              } else {
-                sql += " AND ";
-              }
-              sql += ((DaoField) annotation).fieldName() + "=?";
-            }
-            break;
-          }
-        }
-      }
-
       try {
         Connection connection = getConnection();
         try {
-          PreparedStatement pstmt = connection.prepareStatement(sql);
+          if(null == sql_load) {
+            sql_load = loadSqlLoad(usualTable, fields);
+          }
+          PreparedStatement pstmt = connection.prepareStatement(sql_load);
           try {
             int i = 1;
 
@@ -1016,49 +1147,13 @@ public class Manager<P, T extends P> extends ManagerTools {
         + ToStringBuilder.reflectionToString(
           bean,
           ToStringStyle.MULTI_LINE_STYLE);
-
-    String sql = "UPDATE " + usualTable + " SET ";
-
-    boolean first = true;
-    for (Field field : fields) {
-      Annotation[] annotations = field.getAnnotations();
-      for (Annotation annotation : annotations) {
-        if (annotation instanceof DaoField) {
-          if (!((DaoField) annotation).isPrimary()) {
-            if (first) {
-              first = false;
-            } else {
-              sql += ", ";
-            }
-            sql += ((DaoField) annotation).fieldName() + "=?";
-          }
-          break;
-        }
-      }
-    }
-    sql += " WHERE ";
-    first = true;
-    for (Field field : fields) {
-      Annotation[] annotations = field.getAnnotations();
-      for (Annotation annotation : annotations) {
-        if (annotation instanceof DaoField) {
-          if (((DaoField) annotation).isPrimary()) {
-            if (first) {
-              first = false;
-            } else {
-              sql += " AND ";
-            }
-            sql += ((DaoField) annotation).fieldName() + "=?";
-          }
-          break;
-        }
-      }
-    }
-
     try {
       Connection connection = getConnection();
       try {
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+        if(null == sql_save) {
+          sql_save = loadSqlSave(usualTable, fields);
+        }        
+        PreparedStatement pstmt = connection.prepareStatement(sql_save);
         try {
           int i = 1;
 
@@ -1125,31 +1220,13 @@ public class Manager<P, T extends P> extends ManagerTools {
           beanPk,
           ToStringStyle.MULTI_LINE_STYLE);
 
-    String sql = "DELETE FROM " + usualTable;
-    sql += " WHERE ";
-
-    boolean first = true;
-    for (Field field : fields) {
-      Annotation[] annotations = field.getAnnotations();
-      for (Annotation annotation : annotations) {
-        if (annotation instanceof DaoField) {
-          if (((DaoField) annotation).isPrimary()) {
-            if (first) {
-              first = false;
-            } else {
-              sql += " AND ";
-            }
-            sql += ((DaoField) annotation).fieldName() + "=?";
-          }
-          break;
-        }
-      }
-    }
-
     try {
       Connection connection = getConnection();
       try {
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+        if(null == sql_delete) {
+          sql_delete = loadSqlDelete(usualTable, fields);
+        }
+        PreparedStatement pstmt = connection.prepareStatement(sql_delete);
         try {
           int i = 1;
           for (Field field : fields) {
@@ -1193,34 +1270,17 @@ public class Manager<P, T extends P> extends ManagerTools {
     if (beanPk == null) {
       return returnValue;
     }
-    String sql = "SELECT COUNT(*)";
-    sql += " FROM " + usualTable + " WHERE ";
-
-    boolean first = true;
-    for (Field field : fields) {
-      Annotation[] annotations = field.getAnnotations();
-      for (Annotation annotation : annotations) {
-        if (annotation instanceof DaoField) {
-          if (((DaoField) annotation).isPrimary()) {
-            if (first) {
-              first = false;
-            } else {
-              sql += " AND ";
-            }
-            sql += ((DaoField) annotation).fieldName() + "=?";
-          }
-          break;
-        }
-      }
-    }
 
     try {
       Connection connection = getConnection();
       try {
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+        if(null == sql_exist) {
+          sql_exist = loadSqlExist(usualTable, fields);
+        }
+        
+        PreparedStatement pstmt = connection.prepareStatement(sql_exist);
         try {
           int i = 1;
-
           for (Field field : fields) {
             Annotation[] annotations = field.getAnnotations();
             for (Annotation annotation : annotations) {
@@ -1274,26 +1334,12 @@ public class Manager<P, T extends P> extends ManagerTools {
     List<T> returnValue = null;
     try {
       returnValue = new ArrayList<T>(); // 26.375
+      
+      if(null == sql_findAll) {
+        sql_findAll = loadSqlFindAll(usualTable, fields);
+      }      
 
-      String sql = "SELECT ";
-      boolean first = true;
-      for (Field field : fields) {
-        if (first) {
-          first = false;
-        } else {
-          sql += ", ";
-        }
-        Annotation[] annotations = field.getAnnotations();
-        for (Annotation annotation : annotations) {
-          if (annotation instanceof DaoField) {
-            sql += ((DaoField) annotation).fieldName();
-            break;
-          }
-        }
-      }
-      sql += " FROM " + usualTable + " ";
-
-      sql += getSqlWhereAndOrder(wherefields, orderfields);
+      String sql = sql_findAll + getSqlWhereAndOrder(wherefields, orderfields);
       // sql = "SELECT * FROM (SELECT ROWNUM N, P.* FROM (" + sql;
       // sql += ") P WHERE ROWNUM < " + max + ")";
       // sql += "WHERE (N>" + min + ")AND(N<" + max + ")";
@@ -1305,8 +1351,8 @@ public class Manager<P, T extends P> extends ManagerTools {
             ResultSet.CONCUR_READ_ONLY);
           try {
             ResultSet rs = stmt.executeQuery(sql);
-            // rs.absolute(min)
-            // stmt.setMaxRows(max)
+            rs.absolute(min);
+            stmt.setMaxRows(max);
             try {
               while (rs.next()) {
                 T data = entityClass.newInstance();

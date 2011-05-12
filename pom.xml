@@ -79,6 +79,54 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.0-beta-3</version>
+				<configuration>
+					<reportPlugins>
+						<plugin>
+							<!-- javadoc. -->
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-javadoc-plugin</artifactId>
+							<version>2.7</version>
+						</plugin>
+
+						<plugin>
+							<!-- vérifier la qualité du code avec checkstyle. -->
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-checkstyle-plugin</artifactId>
+							<version>2.6</version>
+							<configuration>
+							<!-- 
+								<configLocation>config/sun_checks.xml</configLocation>
+								<configLocation>config/maven_checks.xml</configLocation>
+								<configLocation>file:///D:/ProjetsJava/JValidation/src/test/resources/mp_checks.xml</configLocation>
+							 -->
+								<configLocation>mp_checks.xml</configLocation>
+								
+							</configuration>
+						</plugin>
+
+						<plugin>
+							<!-- générer un rapport de couverture des tests. -->
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>cobertura-maven-plugin</artifactId>
+							<version>2.4</version>
+						</plugin>
+
+						<plugin>
+							<!-- vérifier la qualité du code avec PMD. -->
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-pmd-plugin</artifactId>
+							<version>2.5</version>
+							<configuration>
+								<targetJdk>${compileSource}</targetJdk>
+							</configuration>
+						</plugin>
+					</reportPlugins>
+				</configuration>
+			</plugin>			
 		</plugins>
 	</build>
 

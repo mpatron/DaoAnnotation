@@ -179,7 +179,7 @@ public class ManagerTest {
       if (!manager.isExist(bean)) {
         manager.create(bean);
       }
-      List<MonBean> list = manager.findAll(Integer.MIN_VALUE, Integer.MAX_VALUE, null, null);
+      List<MonBean> list = manager.findAll(0, Integer.MAX_VALUE, null, null);
       assertTrue(list.size() > 0);
       for (MonBean monBean : list) {
         StringUtils.length(monBean.getMonChampsTexte());
